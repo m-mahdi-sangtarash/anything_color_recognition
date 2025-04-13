@@ -118,7 +118,7 @@ def main():
                                        monitor="val_loss",
                                        verbose=True)
     learning_rate_monitor = LearningRateMonitor(logging_interval="epoch")
-    trainer = pl.Trainer(gpus=1 if Config.device == "cuda" else 0,
+    trainer = pl.Trainer(devices=1 if Config.device == "cuda" else 0,
                          max_epochs=Config.train_epochs,
                          min_epochs=Config.train_epochs // 10,
                          callbacks=[model_checkpoint, learning_rate_monitor],
@@ -130,8 +130,8 @@ def main():
     trainer.fit(model=lit_model, train_dataloaders=train_loader, val_dataloaders=val_loader)
     weight_path = join(output_dir, "best.ckpt")
     print("[INFO] Testing the model")
-    val_metrics = trainer.test(lit_model, ckpt_path="best", dataloaders=val_loader)
-    train_metrics = trainer.test(lit_model, ckpt_path="best", dataloaders=train_loader)
+    val_metrics = torch.load(weight_path, weights_only=False)
+    train_metrics = torch.load(weight_path, weights_only=False)
     TorchUtils.save_config_to_weight(weight_path, Config, id2class=id2class, val_metrics=val_metrics,
                                      train_metrics=train_metrics)
 
